@@ -39,6 +39,7 @@ var app = http.createServer(function(request, response) {
             <meta charset="utf-8">
           </head>
           <body>
+            <a href="/update?id=${title}">update</a>
             ${body}
           </body>
           </html>
@@ -104,15 +105,37 @@ var app = http.createServer(function(request, response) {
     if (queryData.id === undefined) {
       response.writeHead(200);
       response.end(
-        'Thiis Update but queryData.id is undefined'
+        'This Update but queryData.id is undefined'
       );
     } else {
-      fs.readFile(`./data/${queryData.id}`, 'utf-8', function(err, decription){
+      fs.readFile(`./data/${queryData.id}`, 'utf-8', function(err, description){
         var title = queryData.id;
 
         response.writeHead(200);
         response.end(
-
+          `
+          <!doctype html>
+          <html>
+          <head>
+            <title></title>
+            <meta charset="utf-8">
+          </head>
+          <body>
+            <form action="/update_process" method="POST">
+              <input type="hidden" name="id" value="${title}"></input>
+              <p>
+                <input type="text" name="title" placeholder="title", value="${title}">
+              </p>
+              <p>
+                <textarea name="description" placeholder="description">${description}</textarea>
+              </p>
+              <p>
+                <input type="submit">
+              </p>
+            </form>
+          </body>
+          </html>
+          `
         );
       });
     }
@@ -145,6 +168,34 @@ var app = http.createServer(function(request, response) {
         response.end();
       })
     })
+  } else if (pathname === '/update_process') {
+    var body = '';
+    request.on('data', function (data) {
+      body = body + data;
+      // Too much POST data, kill the connection!
+      // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+      if (body.length > 1e6) {
+        request.connection.destroy();
+      }
+    });
+
+    request.on('end', function () {
+      console.log('= Update Data Transmision Completed');
+      var post = qs.parse(body);
+
+      var id = post.id;
+      var new_id = post.title;
+      var title = post.title;
+      var description = post.description;
+
+      fs.rename(`data/${id}`, `data/${new_id}`, function(err) {
+        fs.writeFile(`data/${new_id}`, description, 'utf8', function(err) {
+          console.log(`to ${new_id}`);
+          response.writeHead(302, {Location: `/?id=${new_id}`});
+          response.end();
+        })
+      });
+    });
   } else {
     response.writeHead(404);
     response.end('Not Found at all');
