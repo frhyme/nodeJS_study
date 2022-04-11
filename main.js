@@ -3,6 +3,7 @@ NOT IMPLEMENTED
 - using DOM for efficient code
 - read post from DB
 - extract templte html for removing duplicate code
+- ADD delete
 `
 
 var http = require('http');
@@ -40,6 +41,7 @@ var app = http.createServer(function(request, response) {
           </head>
           <body>
             <a href="/update?id=${title}">update</a>
+            <a href="/delete?id=${title}">delete</a>
             ${body}
           </body>
           </html>
@@ -140,6 +142,16 @@ var app = http.createServer(function(request, response) {
       });
     }
 
+  } else if (pathname === '/delete') {
+    if (queryData.id === undefined) {
+      response.writeHead(302, {Location: `/index.html`})
+      response.end();
+    } else {
+      fs.unlink(`data/${queryData.id}`, function(err){
+        response.writeHead(302, {Location: `/`});
+        response.end();
+      });
+    }
   } else if (pathname === '/create_process') {
     var body = '';
 
