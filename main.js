@@ -2,7 +2,7 @@
 NOT IMPLEMENTED
 - using DOM for efficient code
 - read post from DB
-- extract templte html for removing duplicate code
+- extract templte html for removing duplicate code(DONE)
 - ADD delete
 - add chart.js with DB
 `
@@ -31,25 +31,16 @@ var app = http.createServer(function(request, response) {
       var title = queryData.id;
 
       fs.readFile(`data/${title}`, 'utf-8', function(err, description){
-        var body = `<h2>${title}</h2>${description}`
+        var body = `
+          <a href="/">Index</a>
+          <a href="/update?id=${title}">update</a>
+          <a href="/delete?id=${title}">delete</a>
+          <h2>${title}</h2>${description}
+        `
 
         response.writeHead(200);
         response.end(
-          `
-          <!doctype html>
-          <html>
-          <head>
-            <title></title>
-            <meta charset="utf-8">
-          </head>
-          <body>
-            <a href="/update?id=${title}">update</a>
-            <a href="/delete?id=${title}">delete</a>
-            ${body}
-
-          </body>
-          </html>
-          `
+          template.template_with_body(body)
         )
       })
 
@@ -63,48 +54,32 @@ var app = http.createServer(function(request, response) {
         elem_list += `<li><a href="/?id=${each_file}">${each_file}</a></li>`
       })
       elem_list += '</ul>';
+      body = `
+        <a href="/create">create</a>
+        ${elem_list}
+      `
 
       response.writeHead(200);
       response.end(
-        `
-        <!doctype html>
-        <html>
-        <head>
-          <title></title>
-          <meta charset="utf-8">
-        </head>
-        <body>
-          <a href="/create">create</a>
-          ${elem_list}
-        </body>
-        </html>
-        `
+        template.template_with_body(body)
       );
     });
   } else if (pathname === '/create') {
     console.log('This is create');
+    body = `
+      <form action="/create_process" method="POST">
+        <p><input type="text" name="title" placeholder="title"></p>
+        <p>
+          <textarea name="description" placeholder="description"></textarea>
+        </p>
+        <p>
+          <input type="submit">
+        </p>
+      </form>
+    `
     response.writeHead(200);
     response.end(
-      `
-      <!doctype html>
-      <html>
-      <head>
-        <title></title>
-        <meta charset="utf-8">
-      </head>
-      <body>
-        <form action="/create_process" method="POST">
-          <p><input type="text" name="title" placeholder="title"></p>
-          <p>
-            <textarea name="description" placeholder="description"></textarea>
-          </p>
-          <p>
-            <input type="submit">
-          </p>
-        </form>
-      </body>
-      </html>
-      `
+      template.template_with_body(body)
     );
   } else if (pathname === '/update') {
     if (queryData.id === undefined) {
@@ -116,31 +91,24 @@ var app = http.createServer(function(request, response) {
       fs.readFile(`./data/${queryData.id}`, 'utf-8', function(err, description){
         var title = queryData.id;
 
+        body = `
+          <form action="/update_process" method="POST">
+            <input type="hidden" name="id" value="${title}"></input>
+            <p>
+              <input type="text" name="title" placeholder="title", value="${title}">
+            </p>
+            <p>
+              <textarea name="description" placeholder="description">${description}</textarea>
+            </p>
+            <p>
+              <input type="submit">
+            </p>
+          </form>
+        `
+
         response.writeHead(200);
         response.end(
-          `
-          <!doctype html>
-          <html>
-          <head>
-            <title></title>
-            <meta charset="utf-8">
-          </head>
-          <body>
-            <form action="/update_process" method="POST">
-              <input type="hidden" name="id" value="${title}"></input>
-              <p>
-                <input type="text" name="title" placeholder="title", value="${title}">
-              </p>
-              <p>
-                <textarea name="description" placeholder="description">${description}</textarea>
-              </p>
-              <p>
-                <input type="submit">
-              </p>
-            </form>
-          </body>
-          </html>
-          `
+          template.template_with_body(body)
         );
       });
     }
