@@ -4,12 +4,15 @@ NOT IMPLEMENTED
 - read post from DB
 - extract templte html for removing duplicate code
 - ADD delete
+- add chart.js with DB
 `
 
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
 var qs = require('querystring');
+
+var template = require('./lib/template.js');
 
 var app = http.createServer(function(request, response) {
 
@@ -43,6 +46,7 @@ var app = http.createServer(function(request, response) {
             <a href="/update?id=${title}">update</a>
             <a href="/delete?id=${title}">delete</a>
             ${body}
+
           </body>
           </html>
           `
@@ -92,8 +96,7 @@ var app = http.createServer(function(request, response) {
         <form action="/create_process" method="POST">
           <p><input type="text" name="title" placeholder="title"></p>
           <p>
-            <textarea name="description" placeholder="description">
-            </textarea>
+            <textarea name="description" placeholder="description"></textarea>
           </p>
           <p>
             <input type="submit">
